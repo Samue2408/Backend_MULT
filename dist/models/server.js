@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const connection_1 = __importDefault(require("../db/connection"));
 const cors_1 = __importDefault(require("cors"));
+const users_routes_1 = __importDefault(require("../routes/users.routes"));
 class Server {
     constructor() {
         this.app = (0, express_1.default)();
@@ -25,10 +26,11 @@ class Server {
         this.app.use((0, cors_1.default)());
     }
     routes() {
-        /*  this.app.use('/api/users', routesUsers),
-         this.app.use('/api/cars', routesCars),
-         this.app.use('/api/bookings', routesBookings),
-         this.app.use('/api/favoritesCars', routesFavoritesCar) */
+        this.app.use('/api/users', users_routes_1.default);
+        /*
+        this.app.use('/api/cars', routesCars),
+        this.app.use('/api/bookings', routesBookings),
+        this.app.use('/api/favoritesCars', routesFavoritesCar) */
     }
     conectDB() {
         connection_1.default.connect((error) => {
