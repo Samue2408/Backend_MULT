@@ -7,6 +7,8 @@ const express_1 = __importDefault(require("express"));
 const connection_1 = __importDefault(require("../db/connection"));
 const cors_1 = __importDefault(require("cors"));
 const users_routes_1 = __importDefault(require("../routes/users.routes"));
+const roles_routes_1 = __importDefault(require("../routes/roles.routes"));
+const working_days_routes_1 = __importDefault(require("../routes/working_days.routes"));
 class Server {
     constructor() {
         this.app = (0, express_1.default)();
@@ -26,7 +28,9 @@ class Server {
         this.app.use((0, cors_1.default)());
     }
     routes() {
-        this.app.use('/api/users', users_routes_1.default);
+        this.app.use('/api/users', users_routes_1.default),
+            this.app.use('/api/roles', roles_routes_1.default),
+            this.app.use('/api/working_days', working_days_routes_1.default);
         /*
         this.app.use('/api/cars', routesCars),
         this.app.use('/api/bookings', routesBookings),

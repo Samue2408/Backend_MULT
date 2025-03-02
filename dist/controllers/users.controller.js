@@ -83,9 +83,9 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const valores = Object.values(body);
         yield connection_1.default.query(`
-        INSERT INTO users (full_name, "user", password, level_training, role_id, working_day_id) 
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *;
+            INSERT INTO users (full_name, "user", password, level_training, role_id, working_day_id) 
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *;
         `, valores, (error, data) => {
             if (error) {
                 console.error("Error database details: " + error.message);

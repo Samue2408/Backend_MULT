@@ -2,6 +2,8 @@ import express, {Application} from 'express';
 import pool from '../db/connection';
 import cors from 'cors';
 import routesUsers from '../routes/users.routes';
+import routesRoles from '../routes/roles.routes';
+import routerWorkingDays from '../routes/working_days.routes';
 
 class Server {
     private app: Application;
@@ -28,7 +30,9 @@ class Server {
     }
 
     routes(){
-        this.app.use('/api/users', routesUsers)
+        this.app.use('/api/users', routesUsers),
+        this.app.use('/api/roles', routesRoles),
+        this.app.use('/api/working_days', routerWorkingDays)
        
         /*  
         this.app.use('/api/cars', routesCars),

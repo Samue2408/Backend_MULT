@@ -79,12 +79,13 @@ export const postUser = async (req: Request, res: Response) => {
             body.password = await bcrypt.hash(body.password, saltRounds);
         }
         
+        
         const valores = Object.values(body);
 
         await connection.query(`
-        INSERT INTO users (full_name, "user", password, level_training, role_id, working_day_id) 
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *;
+            INSERT INTO users (full_name, "user", password, level_training, role_id, working_day_id) 
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *;
         `, valores, (error, data) => {
             if (error) {
                 console.error("Error database details: " + error.message);
