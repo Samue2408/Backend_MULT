@@ -69,16 +69,23 @@ export const getUserByRole = async (req: Request, res: Response) => {
     });
 }
 
-export const postUser = async (req: Request, res: Response) => {
+export const postUser = async (req: Request, res: Response): Promise<any> => { // Promise<any> para evitar error en el return
     const { body } = req;
 
     try {
+
+        const userExist = await connection.query('SELECT * FROM users WHERE "user" = $1', [body.user]);
+
+        if(userExist.rows.length > 0) {
+            return res.status(400).json({
+                msg: "User already exists"
+            });
+        }
         
         // Hashear la contraseña
         if (body.password) {
             body.password = await bcrypt.hash(body.password, saltRounds);
-        }
-        
+        }        
         
         const valores = Object.values(body);
 

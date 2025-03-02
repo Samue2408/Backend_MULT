@@ -77,6 +77,12 @@ exports.getUserByRole = getUserByRole;
 const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { body } = req;
     try {
+        const userExist = yield connection_1.default.query('SELECT * FROM users WHERE "user" = $1', [body.user]);
+        if (userExist.rows.length > 0) {
+            return res.status(400).json({
+                msg: "User already exists"
+            });
+        }
         // Hashear la contraseña
         if (body.password) {
             body.password = yield bcrypt_1.default.hash(body.password, saltRounds);
