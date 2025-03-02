@@ -1,39 +1,113 @@
 import { Request, Response, NextFunction, response } from "express";
-import connection from "../db/connection";/* 
+import connection from "../db/connection";
 import bcrypt from 'bcrypt';
-*/
+
 
 
 const saltRounds = 10; // Número de rondas para el salt de bcrypt
 
 export const getUsers = async (req: Request,  res: Response) => {
 
-    connection.query('SELECT * FROM users', [], (error, data) => {
+    connection.query(`
+            SELECT 
+                u.user_id AS usuario_id,
+                u.full_name AS usuario_nombre,
+                u.user AS usuario,
+                u.level_training AS nivel_formacion,
+                r.name AS rol_nombre,
+                wd.name AS working_day
+            FROM users u
+            INNER JOIN roles r ON u.role_id = r.role_id
+            LEFT JOIN working_days wd ON u.working_day_id = wd.working_day_id
+        `, [], (error, data) => {
         if (error) console.error("Error database details: " + (error as any).message);          
         res.json(data.rows);
     });    
 }   
 
-
- export const getUser = async (req: Request, res: Response) => {
+export const getUser = async (req: Request, res: Response) => {
     
     const { id } = req.params;
 
-    await connection.query('SELECT * FROM users WHERE user_id = $1', [Number(id)], (error, data) => {
+    await connection.query(`
+        SELECT 
+            u.user_id AS usuario_id,
+            u.full_name AS usuario_nombre,
+            u.user AS usuario,
+            u.level_training AS nivel_formacion,
+            r.name AS rol_nombre,
+            wd.name AS working_day
+        FROM users u
+        INNER JOIN roles r ON u.role_id = r.role_id
+        LEFT JOIN working_days wd ON u.working_day_id = wd.working_day_id
+        WHERE u.user_id = $1;
+        `, [Number(id)], (error, data) => {
         if (error) throw error;
         
         res.json(data.rows);
     });
 }
 
-/*
-export const getCustomer = (req: Request, res: Response) => {
-    connection.query('SELECT id, c_name, address, phone, email FROM Users WHERE role_id = 4', ((error, data) => {
-        if(error) throw error;
-        res.json(data);
-    }))
+
+export const getUserByRole = async (req: Request, res: Response) => {
+    
+    const { role_id } = req.params;
+
+    await connection.query(`
+        SELECT 
+            u.user_id AS usuario_id,
+            u.full_name AS usuario_nombre,
+            u.user AS usuario_email,
+            r.name AS rol_nombre
+        FROM users u
+        INNER JOIN roles r ON u.role_id = r.role_id
+        WHERE u.role_id = $1;
+`, [Number(role_id)], (error, data) => {
+        if (error) throw error;
+        
+        res.json(data.rows);
+    });
 }
 
+export const postUser = async (req: Request, res: Response) => {
+    const { body } = req;
+
+    try {
+        
+        // Hashear la contraseña
+        if (body.password) {
+            body.password = await bcrypt.hash(body.password, saltRounds);
+        }
+        
+        const valores = Object.values(body);
+
+        await connection.query(`
+        INSERT INTO users (full_name, "user", password, level_training, role_id, working_day_id) 
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *;
+        `, valores, (error, data) => {
+            if (error) {
+                console.error("Error database details: " + error.message);
+                return res.status(500).json({
+                    msg: error.message
+                })
+            };
+
+            res.json({
+                msg: "User successfully created",
+                body: data.rows
+            });
+        });
+
+    } catch (e) {
+        res.status(500).json({
+            msg: "Error creating user",
+            error: e
+        });
+    }
+};
+
+/*
 export const deleteUser = (req: Request, res: Response) => {
     
     const { id } = req.params;
@@ -50,35 +124,6 @@ export const deleteUser = (req: Request, res: Response) => {
     
 }
 
-export const postUser = async (req: Request, res: Response) => {
-    const { body } = req;
-
-    try {
-        // Hashear la contraseña
-        if (body.password) {
-            body.password = await bcrypt.hash(body.password, saltRounds);
-        }
-
-        connection.query('INSERT INTO Users SET ?', [body], (error, data) => {
-            if (error) {
-                console.error("Error database details: " + error.message);
-                return res.status(500).json({
-                    msg: error.message
-                })
-            };
-
-            res.json({
-                msg: "User successfully created",
-                body: body
-            });
-        });
-    } catch (e) {
-        res.status(500).json({
-            msg: "Error creating user",
-            error: e
-        });
-    }
-};
 
 // Función para actualizar un usuario
 export const putUser = async (req: Request, res: Response) => {
