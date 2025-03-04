@@ -7,4 +7,6 @@ router.get('/', users_controller_1.getUsers);
 router.get('/:id', users_controller_1.getUser);
 router.get('/role/:role_id', users_controller_1.getUserByRole);
 router.post('/', users_controller_1.postUser);
+router.put('/:id', users_controller_1.putUser);
+router.delete('/:id', users_controller_1.deleteUser);
 exports.default = router;

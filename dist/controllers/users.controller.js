@@ -12,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postUser = exports.getUserByRole = exports.getUser = exports.getUsers = void 0;
+exports.putUser = exports.deleteUser = exports.postUser = exports.getUserByRole = exports.getUser = exports.getUsers = void 0;
 const connection_1 = __importDefault(require("../db/connection"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const saltRounds = 10; // Número de rondas para el salt de bcrypt
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    connection_1.default.query(`
+    yield connection_1.default.query(`
             SELECT 
                 u.user_id AS usuario_id,
                 u.full_name AS usuario_nombre,
@@ -29,8 +29,9 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             INNER JOIN roles r ON u.role_id = r.role_id
             LEFT JOIN working_days wd ON u.working_day_id = wd.working_day_id
         `, [], (error, data) => {
-        if (error)
+        if (error) {
             console.error("Error database details: " + error.message);
+        }
         res.json(data.rows);
     });
 });
@@ -50,8 +51,9 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         LEFT JOIN working_days wd ON u.working_day_id = wd.working_day_id
         WHERE u.user_id = $1;
         `, [Number(id)], (error, data) => {
-        if (error)
-            throw error;
+        if (error) {
+            console.error("Error database details: " + error.message);
+        }
         res.json(data.rows);
     });
 });
@@ -87,12 +89,12 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (body.password) {
             body.password = yield bcrypt_1.default.hash(body.password, saltRounds);
         }
-        const valores = Object.values(body);
+        const values = Object.values(body);
         yield connection_1.default.query(`
             INSERT INTO users (full_name, "user", password, level_training, role_id, working_day_id) 
             VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *;
-        `, valores, (error, data) => {
+        `, values, (error, data) => {
             if (error) {
                 console.error("Error database details: " + error.message);
                 return res.status(500).json({
@@ -114,60 +116,67 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.postUser = postUser;
-/*
-export const deleteUser = (req: Request, res: Response) => {
-    
+const deleteUser = (req, res) => {
     const { id } = req.params;
-
-    connection.query('DELETE FROM Users WHERE id = ?', id, (error, data) => {
-        if (error) throw error;
-        
+    connection_1.default.query('DELETE FROM users WHERE user_id = $1 RETURNING *;', [id], (error, data) => {
+        if (error)
+            throw error;
+        if (data.rows.length === 0) {
+            return res.status(400).json({
+                msg: "User not found"
+            });
+        }
         res.json({
             msg: "successfull user delete",
-            id: id
-        })
+            deleted_user: data.rows
+        });
     });
-
-    
-}
-
-
+};
+exports.deleteUser = deleteUser;
 // Función para actualizar un usuario
-export const putUser = async (req: Request, res: Response) => {
+const putUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { body } = req;
     const { id } = req.params;
-
     try {
         // Hashear la contraseña solo si existe en el cuerpo de la solicitud
         if (body.password) {
-            body.password = await bcrypt.hash(body.password, saltRounds);
+            body.password = yield bcrypt_1.default.hash(body.password, saltRounds);
         }
-
-        connection.query('UPDATE Users SET ? WHERE id = ?', [body, id], (error, data) => {
+        body.user_id = id;
+        console.log(body);
+        const values = Object.values(body);
+        yield connection_1.default.query(`
+            UPDATE users
+            SET full_name = $1, "user" = $2, password = $3, level_training = $4, role_id = $5, working_day_id = $6 
+            WHERE user_id = $7
+            RETURNING *;
+        `, values, (error, data) => {
             if (error) {
                 console.error("Error database details: " + error.message);
                 return res.status(500).json({
                     msg: error.message
-                })
-            };
-
+                });
+            }
+            ;
             res.json({
                 msg: "User successfully updated",
-                body: body
+                updated_user: data.rows
             });
         });
-    } catch (e) {
+    }
+    catch (e) {
         res.status(500).json({
             msg: "Error updating user",
             error: e
         });
     }
-};
-
+});
+exports.putUser = putUser;
+/*
 
 export const verifyUserCredentials = (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
-
+    
     connection.query<User[]>('SELECT * FROM Users WHERE email = ?', [email], async (error, data) => {
         if (error) {
             return res.status(500).json({ message: 'Error en el servidor' });
