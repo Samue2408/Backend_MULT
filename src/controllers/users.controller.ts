@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, response } from "express";
 import connection from "../db/connection";
 import bcrypt from 'bcrypt';
-
+import { findRefreshToken } from "./user_tokens.controller";
 
 
 const saltRounds = 10; // Número de rondas para el salt de bcrypt
@@ -50,7 +50,6 @@ export const getUser = async (req: Request, res: Response) => {
         res.json(data.rows);
     });
 }
-
 
 export const getUserByRole = async (req: Request, res: Response) => {
     
@@ -118,7 +117,6 @@ export const postUser = async (req: Request, res: Response): Promise<any> => { /
     }
 };
 
-
 export const deleteUser = (req: Request, res: Response) => {
     
     const { id } = req.params;
@@ -152,8 +150,6 @@ export const putUser = async (req: Request, res: Response) => {
 
         body.user_id = id;
 
-        console.log(body);
-
         const values = Object.values(body);
 
         await connection.query(`
@@ -183,22 +179,22 @@ export const putUser = async (req: Request, res: Response) => {
         }
 };
 
-/*
-
 export const verifyUserCredentials = (req: Request, res: Response, next: NextFunction) => {
-    const { email, password } = req.body;
+    const { user, password } = req.body;
     
-    connection.query<User[]>('SELECT * FROM Users WHERE email = ?', [email], async (error, data) => {
+    connection.query('SELECT * FROM users WHERE "user" = $1', [user], async (error, data) => {
         if (error) {
+            console.error("Error database details: " + error.message);
             return res.status(500).json({ message: 'Error en el servidor' });
         }
 
-        if (data.length === 0) {
+        if (data.rows.length === 0) {
             return res.status(401).json({ message: 'Email inválido' });
         }
 
-        const user = data[0];
-
+        const user = data.rows[0];
+        res.locals.user = user;
+ 
         // Compara la contraseña ingresada con la almacenada (que está cifrada)
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -206,20 +202,7 @@ export const verifyUserCredentials = (req: Request, res: Response, next: NextFun
             return res.status(401).json({ message: 'Password inválido' });
         }
 
-        // Retorna el usuario para el controlador de UserToken
-        res.locals.user = {
-            id: user.id,
-            name: user.c_name,
-            email: user.email,
-            role: user.role_id,
-            phone: user.phone,
-            address: user.address 
-            // Puedes agregar otros datos del usuario si los necesitas
-        };
-
-        // Continúa con el siguiente middleware (el controlador de token)
-        res.locals.authenticated = true;
-        
         next();
+
     });
-}; */
+}; 
