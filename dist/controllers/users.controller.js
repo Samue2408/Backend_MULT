@@ -31,6 +31,7 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         `, [], (error, data) => {
         if (error) {
             console.error("Error database details: " + error.message);
+            res.status(500).json({ message: 'Error en el servidor' });
         }
         res.json(data.rows);
     });
@@ -53,6 +54,12 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         `, [Number(id)], (error, data) => {
         if (error) {
             console.error("Error database details: " + error.message);
+            res.status(500).json({ message: 'Error en el servidor' });
+        }
+        if (data.rows.length === 0) {
+            return res.status(404).json({
+                msg: "User not found"
+            });
         }
         res.json(data.rows);
     });
@@ -70,8 +77,14 @@ const getUserByRole = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         INNER JOIN roles r ON u.role_id = r.role_id
         WHERE u.role_id = $1;
 `, [Number(role_id)], (error, data) => {
-        if (error)
-            throw error;
+        if (error) {
+            res.status(500).json({ message: 'Error en el servidor' });
+        }
+        if (data.rows.length === 0) {
+            return res.status(404).json({
+                msg: "User not found"
+            });
+        }
         res.json(data.rows);
     });
 });
@@ -102,7 +115,12 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 });
             }
             ;
-            res.json({
+            if (data.rows.length === 0) {
+                return res.status(400).json({
+                    msg: "Invalid data"
+                });
+            }
+            res.status(201).json({
                 msg: "User successfully created",
                 body: data.rows
             });
@@ -119,13 +137,19 @@ exports.postUser = postUser;
 const deleteUser = (req, res) => {
     const { id } = req.params;
     connection_1.default.query('DELETE FROM users WHERE user_id = $1 RETURNING *;', [id], (error, data) => {
-        if (error)
-            throw error;
+        if (error) {
+            console.error("Error database details: " + error.message);
+            return res.status(500).json({
+                msg: error.message
+            });
+        }
+        ;
         if (data.rows.length === 0) {
             return res.status(400).json({
                 msg: "User not found"
             });
         }
+        ;
         res.json({
             msg: "successfull user delete",
             deleted_user: data.rows
@@ -157,6 +181,11 @@ const putUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 });
             }
             ;
+            if (data.rows.length === 0) {
+                return res.status(400).json({
+                    msg: "Invalid data"
+                });
+            }
             res.json({
                 msg: "User successfully updated",
                 updated_user: data.rows

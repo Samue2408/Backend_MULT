@@ -21,7 +21,8 @@ export const getUsers = async (req: Request,  res: Response) => {
             LEFT JOIN working_days wd ON u.working_day_id = wd.working_day_id
         `, [], (error, data) => {
         if (error) {
-            console.error("Error database details: " + (error as any).message);          
+            console.error("Error database details: " + (error as any).message); 
+            res.status(500).json({ message: 'Error en el servidor' });   
         }
             res.json(data.rows);
     });    
@@ -45,8 +46,16 @@ export const getUser = async (req: Request, res: Response) => {
         WHERE u.user_id = $1;
         `, [Number(id)], (error, data) => {
         if (error) {
-            console.error("Error database details: " + (error as any).message);          
+            console.error("Error database details: " + (error as any).message);  
+            res.status(500).json({ message: 'Error en el servidor' });           
         }
+
+        if(data.rows.length === 0) {
+            return res.status(404).json({
+                msg: "User not found"
+            });
+        }
+
         res.json(data.rows);
     });
 }
@@ -65,7 +74,15 @@ export const getUserByRole = async (req: Request, res: Response) => {
         INNER JOIN roles r ON u.role_id = r.role_id
         WHERE u.role_id = $1;
 `, [Number(role_id)], (error, data) => {
-        if (error) throw error;
+        if (error) {
+            res.status(500).json({ message: 'Error en el servidor' });   
+        }
+
+        if(data.rows.length === 0) {
+            return res.status(404).json({
+                msg: "User not found"
+            });
+        }
         
         res.json(data.rows);
     });
@@ -75,7 +92,6 @@ export const postUser = async (req: Request, res: Response): Promise<any> => { /
     const { body } = req;
 
     try {
-
         const userExist = await connection.query('SELECT * FROM users WHERE "user" = $1', [body.user]);
 
         if(userExist.rows.length > 0) {
@@ -103,7 +119,13 @@ export const postUser = async (req: Request, res: Response): Promise<any> => { /
                 })
             };
 
-            res.json({
+            if(data.rows.length === 0) {
+                return res.status(400).json({
+                    msg: "Invalid data"
+                });
+            }
+
+            res.status(201).json({
                 msg: "User successfully created",
                 body: data.rows
             });
@@ -122,20 +144,25 @@ export const deleteUser = (req: Request, res: Response) => {
     const { id } = req.params;
 
     connection.query('DELETE FROM users WHERE user_id = $1 RETURNING *;', [id], (error, data) => {
-        if (error) throw error;
+        if (error) {
+            console.error("Error database details: " + error.message);
+            return res.status(500).json({
+                msg: error.message
+            })
+        };
 
         if(data.rows.length === 0) {
             return res.status(400).json({
                 msg: "User not found"
             });
-        }
+        };
         
         res.json({
             msg: "successfull user delete",
             deleted_user: data.rows
         })
     });    
-}
+};
 
 // Función para actualizar un usuario
 export const putUser = async (req: Request, res: Response) => {
@@ -164,6 +191,12 @@ export const putUser = async (req: Request, res: Response) => {
                     msg: error.message
                 })
             };
+
+            if(data.rows.length === 0) {
+                return res.status(400).json({
+                    msg: "Invalid data"
+                });
+            }
             
             res.json({
                 msg: "User successfully updated",

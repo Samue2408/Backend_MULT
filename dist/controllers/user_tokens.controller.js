@@ -19,7 +19,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret_key';
 const generateTokens = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-    console.log(token);
     if (token) {
         yield deleteRefreshToken(token);
     }
@@ -73,7 +72,7 @@ const refreshAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
     const result = yield connection_1.default.query('SELECT * FROM refresh_tokens WHERE token = $1', [token]);
     if (result.rows.length === 0) {
-        return res.status(401).json({
+        return res.status(403).json({
             msg: "Invalid Refresh Token"
         });
     }
@@ -86,8 +85,12 @@ exports.refreshAccessToken = refreshAccessToken;
 const findRefreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { user_id } = res.locals.user;
     connection_1.default.query('SELECT * FROM refresh_tokens WHERE user_id = $1', [user_id], (error, data) => {
-        if (error)
-            throw error;
+        if (error) {
+            console.error("Error database details: " + error.message);
+            return res.status(500).json({
+                msg: error.message
+            });
+        }
         if (data.rows.length === 0) {
             return res.json({
                 active_session: false,

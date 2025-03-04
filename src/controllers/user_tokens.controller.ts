@@ -7,7 +7,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret_key';
 export const generateTokens = async (req: Request, res: Response) => {
 
     const token = req.headers.authorization?.split(' ')[1];
-    console.log(token);
 
     if(token) {
         await deleteRefreshToken(token);
@@ -27,7 +26,7 @@ export const generateTokens = async (req: Request, res: Response) => {
                 console.error("Error database details: " + error.message);
                 return res.status(500).json({
                     msg: error.message
-                })
+                })  
             };
             res.json({
                 msg: "Sign in successfully",
@@ -69,7 +68,7 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<a
     const result = await connection.query('SELECT * FROM refresh_tokens WHERE token = $1', [token]);
 
     if(result.rows.length === 0) {
-        return res.status(401).json({
+        return res.status(403).json({
             msg: "Invalid Refresh Token"
         });
     }
@@ -87,7 +86,12 @@ export const findRefreshToken = async (req: Request, res: Response) => {
     const { user_id } = res.locals.user;
 
     connection.query('SELECT * FROM refresh_tokens WHERE user_id = $1', [user_id], (error, data) => {
-        if (error) throw error;
+        if (error) {
+            console.error("Error database details: " + error.message);
+            return res.status(500).json({
+                msg: error.message
+            })
+        }
 
         if(data.rows.length === 0) {
             return res.json({
