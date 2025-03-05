@@ -21,9 +21,9 @@ export const getUsers = async (req: Request,  res: Response) => {
         `, [], (error, data) => {
         if (error) {
             console.error("Error database details: " + (error as any).message); 
-            res.status(500).json({ message: 'Error en el servidor' });   
+            return res.status(500).json({ message: 'Error en el servidor' });   
         }
-            res.json(data.rows);
+        res.json(data.rows);
     });    
 }   
 
@@ -46,7 +46,7 @@ export const getUser = async (req: Request, res: Response) => {
         `, [Number(id)], (error, data) => {
         if (error) {
             console.error("Error database details: " + (error as any).message);  
-            res.status(500).json({ message: 'Error en el servidor' });           
+            return res.status(500).json({ message: 'Error en el servidor' });           
         }
 
         if(data.rows.length === 0) {
@@ -77,7 +77,7 @@ export const getUserByRole = async (req: Request, res: Response) => {
         WHERE u.role_id = $1;
 `, [Number(role_id)], (error, data) => {
         if (error) {
-            res.status(500).json({ message: 'Error en el servidor' });   
+            return res.status(500).json({ message: 'Error en el servidor' });   
         }
 
         if(data.rows.length === 0) {

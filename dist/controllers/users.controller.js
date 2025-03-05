@@ -21,7 +21,7 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             SELECT 
                 u.user_id,
                 u.full_name,
-                u.user,
+                u.email,
                 u.level_training,
                 r.name AS role,
                 wd.name AS working_day
@@ -31,7 +31,7 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         `, [], (error, data) => {
         if (error) {
             console.error("Error database details: " + error.message);
-            res.status(500).json({ message: 'Error en el servidor' });
+            return res.status(500).json({ message: 'Error en el servidor' });
         }
         res.json(data.rows);
     });
@@ -43,7 +43,7 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         SELECT 
             u.user_id,
             u.full_name,
-            u.user,
+            u.email,
             u.level_training,
             r.name AS role,
             wd.name AS working_day
@@ -54,7 +54,7 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         `, [Number(id)], (error, data) => {
         if (error) {
             console.error("Error database details: " + error.message);
-            res.status(500).json({ message: 'Error en el servidor' });
+            return res.status(500).json({ message: 'Error en el servidor' });
         }
         if (data.rows.length === 0) {
             return res.status(404).json({
@@ -71,7 +71,7 @@ const getUserByRole = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         SELECT 
             u.user_id,
             u.full_name,
-            u.user,
+            u.email,
             u.level_training,
             r.name AS role,
             wd.name AS working_day
@@ -81,7 +81,7 @@ const getUserByRole = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         WHERE u.role_id = $1;
 `, [Number(role_id)], (error, data) => {
         if (error) {
-            res.status(500).json({ message: 'Error en el servidor' });
+            return res.status(500).json({ message: 'Error en el servidor' });
         }
         if (data.rows.length === 0) {
             return res.status(404).json({
@@ -95,10 +95,10 @@ exports.getUserByRole = getUserByRole;
 const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { body } = req;
     try {
-        const userExist = yield connection_1.default.query('SELECT * FROM users WHERE "user" = $1', [body.user]);
+        const userExist = yield connection_1.default.query('SELECT * FROM users WHERE email = $1', [body.email]);
         if (userExist.rows.length > 0) {
             return res.status(400).json({
-                msg: "User already exists"
+                msg: "Email already exists"
             });
         }
         // Hashear la contraseña
@@ -107,7 +107,7 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const values = Object.values(body);
         yield connection_1.default.query(`
-            INSERT INTO users (full_name, "user", password, level_training, role_id, working_day_id) 
+            INSERT INTO users (full_name, email, password, level_training, role_id, working_day_id) 
             VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *;
         `, values, (error, data) => {
@@ -168,7 +168,7 @@ const putUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const values = Object.values(body);
         yield connection_1.default.query(`
             UPDATE users
-            SET full_name = $1, "user" = $2, level_training = $3, role_id = $4, working_day_id = $5
+            SET full_name = $1, email = $2, level_training = $3, role_id = $4, working_day_id = $5
             WHERE user_id = $6
             RETURNING *;
         `, values, (error, data) => {
@@ -200,8 +200,8 @@ const putUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.putUser = putUser;
 const verifyUserCredentials = (req, res, next) => {
-    const { user, password } = req.body;
-    connection_1.default.query('SELECT * FROM users WHERE "user" = $1', [user], (error, data) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email, password } = req.body;
+    connection_1.default.query('SELECT * FROM users WHERE email = $1', [email], (error, data) => __awaiter(void 0, void 0, void 0, function* () {
         if (error) {
             console.error("Error database details: " + error.message);
             return res.status(500).json({ message: 'Error en el servidor' });
