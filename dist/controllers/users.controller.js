@@ -19,11 +19,11 @@ const saltRounds = 10; // Número de rondas para el salt de bcrypt
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield connection_1.default.query(`
             SELECT 
-                u.user_id AS usuario_id,
-                u.full_name AS usuario_nombre,
-                u.user AS usuario,
-                u.level_training AS nivel_formacion,
-                r.name AS rol_nombre,
+                u.user_id,
+                u.full_name,
+                u.user,
+                u.level_training,
+                r.name AS role,
                 wd.name AS working_day
             FROM users u
             INNER JOIN roles r ON u.role_id = r.role_id
@@ -41,11 +41,11 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     yield connection_1.default.query(`
         SELECT 
-            u.user_id AS usuario_id,
-            u.full_name AS usuario_nombre,
-            u.user AS usuario,
-            u.level_training AS nivel_formacion,
-            r.name AS rol_nombre,
+            u.user_id,
+            u.full_name,
+            u.user,
+            u.level_training,
+            r.name AS role,
             wd.name AS working_day
         FROM users u
         INNER JOIN roles r ON u.role_id = r.role_id
@@ -69,12 +69,15 @@ const getUserByRole = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     const { role_id } = req.params;
     yield connection_1.default.query(`
         SELECT 
-            u.user_id AS usuario_id,
-            u.full_name AS usuario_nombre,
-            u.user AS usuario_email,
-            r.name AS rol_nombre
+            u.user_id,
+            u.full_name,
+            u.user,
+            u.level_training,
+            r.name AS role,
+            wd.name AS working_day
         FROM users u
         INNER JOIN roles r ON u.role_id = r.role_id
+        LEFT JOIN working_days wd ON u.working_day_id = wd.working_day_id
         WHERE u.role_id = $1;
 `, [Number(role_id)], (error, data) => {
         if (error) {

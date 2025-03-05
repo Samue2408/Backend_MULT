@@ -10,11 +10,11 @@ export const getUsers = async (req: Request,  res: Response) => {
 
     await connection.query(`
             SELECT 
-                u.user_id AS usuario_id,
-                u.full_name AS usuario_nombre,
-                u.user AS usuario,
-                u.level_training AS nivel_formacion,
-                r.name AS rol_nombre,
+                u.user_id,
+                u.full_name,
+                u.user,
+                u.level_training,
+                r.name AS role,
                 wd.name AS working_day
             FROM users u
             INNER JOIN roles r ON u.role_id = r.role_id
@@ -34,11 +34,11 @@ export const getUser = async (req: Request, res: Response) => {
 
     await connection.query(`
         SELECT 
-            u.user_id AS usuario_id,
-            u.full_name AS usuario_nombre,
-            u.user AS usuario,
-            u.level_training AS nivel_formacion,
-            r.name AS rol_nombre,
+            u.user_id,
+            u.full_name,
+            u.user,
+            u.level_training,
+            r.name AS role,
             wd.name AS working_day
         FROM users u
         INNER JOIN roles r ON u.role_id = r.role_id
@@ -66,12 +66,15 @@ export const getUserByRole = async (req: Request, res: Response) => {
 
     await connection.query(`
         SELECT 
-            u.user_id AS usuario_id,
-            u.full_name AS usuario_nombre,
-            u.user AS usuario_email,
-            r.name AS rol_nombre
+            u.user_id,
+            u.full_name,
+            u.user,
+            u.level_training,
+            r.name AS role,
+            wd.name AS working_day
         FROM users u
         INNER JOIN roles r ON u.role_id = r.role_id
+        LEFT JOIN working_days wd ON u.working_day_id = wd.working_day_id
         WHERE u.role_id = $1;
 `, [Number(role_id)], (error, data) => {
         if (error) {
