@@ -18,6 +18,8 @@ export const generateTokens = async (req: Request, res: Response) => {
         const access_token = await generateAccessToken(user_id);
         const refresh_token = await generateRefreshToken(user_id); 
 
+        
+
         connection.query(`
             INSERT INTO refresh_tokens (user_id, token, created_at)
             VALUES ($1, $2, NOW());
@@ -28,10 +30,14 @@ export const generateTokens = async (req: Request, res: Response) => {
                     msg: error.message
                 })  
             };
+
+
+
             res.json({
                 msg: "Sign in successfully",
                 access_token,
-                refresh_token
+                refresh_token,
+                user_id
             });
         });        
         

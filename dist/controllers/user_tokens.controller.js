@@ -40,7 +40,8 @@ const generateTokens = (req, res) => __awaiter(void 0, void 0, void 0, function*
             res.json({
                 msg: "Sign in successfully",
                 access_token,
-                refresh_token
+                refresh_token,
+                user_id
             });
         });
     }

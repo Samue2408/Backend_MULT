@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyUserCredentials = exports.putUser = exports.deleteUser = exports.postUser = exports.getUserByRole = exports.getUser = exports.getUsers = void 0;
+exports.changePassword = exports.verifyUserCredentials = exports.putUser = exports.deleteUser = exports.postUser = exports.getUserByRole = exports.getUser = exports.getUsers = void 0;
 const connection_1 = __importDefault(require("../db/connection"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const saltRounds = 10; // Número de rondas para el salt de bcrypt
@@ -220,3 +220,51 @@ const verifyUserCredentials = (req, res, next) => {
     }));
 };
 exports.verifyUserCredentials = verifyUserCredentials;
+const changePassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { password, new_password, user_id } = req.body;
+    try {
+        const { rows } = yield connection_1.default.query(`SELECT * FROM users WHERE user_id = $1`, [user_id]);
+        if (rows.length === 0) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+        const password_old = rows[0].password;
+        const same_password = yield bcrypt_1.default.compare(password, password_old);
+        if (!same_password) {
+            return res.status(401).json({
+                msg: "Current password invalid"
+            });
+        }
+        ;
+        const hash_new_password = yield bcrypt_1.default.hash(new_password, saltRounds);
+        yield connection_1.default.query(`
+            UPDATE users
+            SET password = $1
+            WHERE user_id = $2
+            RETURNING *;
+        `, [hash_new_password, user_id], (error, data) => {
+            if (error) {
+                console.error("Error database details: " + error.message);
+                return res.status(500).json({
+                    msg: error.message
+                });
+            }
+            ;
+            if (data.rows.length === 0) {
+                return res.status(400).json({
+                    msg: "Invalid data"
+                });
+            }
+            ;
+            res.json({
+                msg: "User successfully updated",
+                updated_user: data.rows
+            });
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            msg: "Error en el servidor"
+        });
+    }
+});
+exports.changePassword = changePassword;
