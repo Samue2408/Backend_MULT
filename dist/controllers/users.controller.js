@@ -160,21 +160,16 @@ const deleteUser = (req, res) => {
     });
 };
 exports.deleteUser = deleteUser;
-// Función para actualizar un usuario
 const putUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { body } = req;
     const { id } = req.params;
     try {
-        // Hashear la contraseña solo si existe en el cuerpo de la solicitud
-        if (body.password) {
-            body.password = yield bcrypt_1.default.hash(body.password, saltRounds);
-        }
         body.user_id = id;
         const values = Object.values(body);
         yield connection_1.default.query(`
             UPDATE users
-            SET full_name = $1, "user" = $2, password = $3, level_training = $4, role_id = $5, working_day_id = $6 
-            WHERE user_id = $7
+            SET full_name = $1, "user" = $2, level_training = $3, role_id = $4, working_day_id = $5
+            WHERE user_id = $6
             RETURNING *;
         `, values, (error, data) => {
             if (error) {
@@ -189,6 +184,7 @@ const putUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     msg: "Invalid data"
                 });
             }
+            ;
             res.json({
                 msg: "User successfully updated",
                 updated_user: data.rows
