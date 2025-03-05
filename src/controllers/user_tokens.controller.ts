@@ -1,5 +1,5 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { Request, Response } from 'express';
+import { json, Request, Response } from 'express';
 import connection from '../db/connection';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret_key';
@@ -9,7 +9,7 @@ export const generateTokens = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1];
 
     if(token) {
-        await deleteRefreshToken(token);
+        await deleteRefreshTokenBD(token);
     }
 
     try {
@@ -17,8 +17,6 @@ export const generateTokens = async (req: Request, res: Response) => {
 
         const access_token = await generateAccessToken(user_id);
         const refresh_token = await generateRefreshToken(user_id); 
-
-        
 
         connection.query(`
             INSERT INTO refresh_tokens (user_id, token, created_at)
@@ -30,8 +28,6 @@ export const generateTokens = async (req: Request, res: Response) => {
                     msg: error.message
                 })  
             };
-
-
 
             res.json({
                 msg: "Sign in successfully",
@@ -46,6 +42,27 @@ export const generateTokens = async (req: Request, res: Response) => {
     }
 }
 
+export const deleteRefreshToken = async (req: Request, res: Response): Promise<any> => {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if(!token) {
+        return res.status(401).json({
+            msg: "Token no povided"
+        })
+    }
+    
+    const isDeleteToken = await deleteRefreshTokenBD(token);
+
+    if(!isDeleteToken) res.status(500).json({
+        msg: "Token not delete"
+    })
+
+    res.json({
+        msg: "Succesfully logout"
+    })
+
+}
+
 const generateAccessToken = async (user_id: number) => {
     return await jwt.sign({ userId: user_id }, JWT_SECRET, { expiresIn: '1h' } as SignOptions);
 }
@@ -54,10 +71,14 @@ const generateRefreshToken = async (user_id: number) => {
     return await jwt.sign({ userId: user_id }, JWT_SECRET, { expiresIn: '7d' } as SignOptions);
 }
 
-const deleteRefreshToken = async (token: string) => {
+const deleteRefreshTokenBD = async (token: string): Promise<any> => {
     await connection.query('DELETE FROM refresh_tokens WHERE token = $1', [token], (error, data) => {
-        if (error) console.error("Error database details: " + error.message);
-        console.log(data)
+        if (error) {
+            console.error("Error database details: " + error.message);
+            return false
+        } 
+        
+        return true;
     });
 }
 
@@ -89,9 +110,11 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<a
 
 export const findRefreshToken = async (req: Request, res: Response) => {
 
-    const { user_id } = res.locals.user;
+    const user = res.locals.user
 
-    connection.query('SELECT * FROM refresh_tokens WHERE user_id = $1', [user_id], (error, data) => {
+    user.password = undefined
+
+    connection.query('SELECT * FROM refresh_tokens WHERE user_id = $1', [user.user_id], (error, data) => {
         if (error) {
             console.error("Error database details: " + error.message);
             return res.status(500).json({
@@ -102,14 +125,16 @@ export const findRefreshToken = async (req: Request, res: Response) => {
         if(data.rows.length === 0) {
             return res.json({
                 active_session: false,
-                msg: "Without active session"
+                msg: "Without active session",
+                user
             });
         }   
 
         res.json({
             active_session: true,
             msg: "You have an active session",
-            data: data.rows
+            data: data.rows,
+            user
         });
     });
 
