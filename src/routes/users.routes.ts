@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { changePassword, deleteUser, getUser, getUserByRole, getUsers, postUser, putUser, verifyUserCredentials} from "../controllers/users.controller";
-import { findRefreshToken, generateTokens, refreshAccessToken } from "../controllers/user_tokens.controller";
+import { deleteRefreshToken, findRefreshToken, generateTokens, refreshAccessToken } from "../controllers/user_tokens.controller";
 
 const router = Router();
 
@@ -11,7 +11,8 @@ router.get('/role/:role_id', getUserByRole);
 router.put('/update/:id', putUser);
 router.put('/change-password/', changePassword);
 
-router.delete('/:id', deleteUser);
+router.delete('/delete/:id', deleteUser);
+router.delete('/logout', deleteRefreshToken)
 
 router.post('/', postUser);
 router.post('/login', verifyUserCredentials, findRefreshToken);
