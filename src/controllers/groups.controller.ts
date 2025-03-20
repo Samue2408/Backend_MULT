@@ -1,60 +1,60 @@
-import { Response, Request, query } from "express";
+import { Request, Response } from "express";
 import connection from "../db/connection";
 
-export const getWorkingDays = async (req: Request, res: Response) => {
+export const getGroups = async (req: Request, res: Response) => {
 
-    connection.query(`
-        SELECT 
-            wd.working_day_id AS working_day_id,
-            wd.name AS working_day_name
-        FROM working_days wd;
-    `, [], (error, data) => {
-        if (error) console.error("Error database details: " + (error as any).message);
+    await connection.query(`
+        SELECT group_id, name
+        FROM groups;`,
+    [], (error, data) => {
+        
+        if (error) {
+            console.error("Error database details: " + (error as any).message);
+            return res.status(500).json({
+                msg: "Error database details: "
+            });
+        }
+
+        if (data.rows.length === 0) {
+            return res.json({
+                msg: "invalid data"
+            });
+        }
+
         res.json(data.rows);
     });
-
 }
 
-export const getWorkingDay = async (req:Request, res:Response): Promise<any> => {
+export const getGroup = async (req: Request, res: Response) => {
     
     const {id} = req.params;
 
-    const exitWorkDay = await connection.query(`
-        SELECT * 
-        FROM working_days
-        WHERE working_day_id = $1;`, [Number(id)]);
+    await connection.query(`
+        SELECT group_id, name
+        FROM groups
+        WHERE group_id = $1;
+        `, [Number(id)], (error, data) => {
+            if (error) {
+                console.error("Error database details: " + (error as any).message);
+                return res.status(500).json({
+                    msg: "Error database details: "
+                });
+                
+            }
 
-    if (exitWorkDay.rows.length === 0){
-        return res.status(404).json({
-            msg: "No se ha encontrado id"
-        });
-    }
-
-    await connection.query(` 
-        SELECT
-            wk.working_day_id,
-            wk.name
-        FROM working_days wk
-        WHERE wk.working_day_id = $1;`, 
-        [Number(id)], (error, data) => {
-            if (error) console.error("Error database detail: " + (error as any).message);
-            res.json(data.rows);
-
-            if (data.rows.length === 0 ) {
-                return res.status(404).json({
-                    msg: "Working dat no found"
+            if (data.rows.length === 0) {
+                return res.json({
+                    msg: "invalid data"
                 });
             }
 
             res.json(data.rows);
         });
-
 }
 
-export const postWorkingDay = async (req: Request, res: Response): Promise<any> => {
+export const postGroup = async (req: Request, res: Response): Promise<any> => {
     
     try {
-        console.log("paso poe pa qui");
         const {name} = req.body;
 
         if (!name) {
@@ -63,20 +63,19 @@ export const postWorkingDay = async (req: Request, res: Response): Promise<any> 
             });
         }
 
-        const existWorkDay = await connection.query(`
+        const existGroup = await connection.query(`
             SELECT name 
-            FROM working_days
-            WHERE name = $1`, [name]
+            FROM groups
+            WHERE name = $1;`, [name]
         );
 
-        if (existWorkDay.rows.length > 0) {
+        if (existGroup.rows.length > 0) {
             return res.status(400).json({
-                msg: "Working Day already exist"
+                msg: "Groups already exist"
             });
         }
-        console.log("paso poe paqui");
         await connection.query(`
-            INSERT INTO working_days (name) 
+            INSERT INTO groups (name) 
             VALUES ($1)
             RETURNING *;`, 
             [name], (error, data) => {
@@ -94,21 +93,19 @@ export const postWorkingDay = async (req: Request, res: Response): Promise<any> 
                 }
 
                 res.status(201).json({
-                    msg: "Working day succesfully created",
+                    msg: "Groups succesfully created",
                     body: data.rows
                 });
             });
         
     } catch (e) {
         res.status(500).json({
-            msg: "Error creating working day"
+            msg: "Error creating Groups"
         });
     }
-            
 }
 
-export const putWorkingDay = async (req:Request, res:Response): Promise<any> => {
-    
+export const putGroup = async (req: Request, res: Response): Promise<any> => {
     try {
         const {id} = req.params;
         const {name} = req.body;
@@ -121,8 +118,8 @@ export const putWorkingDay = async (req:Request, res:Response): Promise<any> => 
 
         const exitWorkDay = await connection.query(`
             SELECT * 
-            FROM working_days
-            WHERE working_day_id = $1;`, [Number(id)]);
+            FROM groups
+            WHERE group_id = $1;`, [Number(id)]);
 
         if (exitWorkDay.rows.length === 0){
             return res.status(404).json({
@@ -131,15 +128,15 @@ export const putWorkingDay = async (req:Request, res:Response): Promise<any> => 
         }
 
         await connection.query(` 
-            UPDATE working_days
+            UPDATE groups
             SET name = $1
-            WHERE working_day_id = $2
+            WHERE group_id = $2
             RETURNING *;`, 
             [name, Number(id)], (error, data) => {
                 if (error) {
                     console.error("Error database detail: " + (error as any).message);
                     return res.status(500).json({
-                        msg: 'Error en el servidor'
+                        msg: 'Error database detail'
                     });
                 }
 
@@ -150,25 +147,24 @@ export const putWorkingDay = async (req:Request, res:Response): Promise<any> => 
                 };
 
                 res.json({
-                    msg: "Working day succesfully updated",
+                    msg: "Group succesfully updated",
                 });
             });
     } catch (e) {
         res.status(500).json({
-            msg: "Error updating Working day",
+            msg: "Error updating Group",
             error: e
         });
     }
-    
 }
 
-export const deletedWorkingDay = async (req: Request, res: Response) => {
+export const deleteGroup = async (req: Request, res: Response) => {
     try {
         const {id} = req.params;
 
         await connection.query(`
-            DELETE FROM working_days 
-            WHERE working_day_id = $1 
+            DELETE FROM groups 
+            WHERE group_id = $1 
             RETURNING *;`, [Number(id)], (error, data) =>{
                 if (error) {
                     console.error("Error data");
@@ -179,18 +175,18 @@ export const deletedWorkingDay = async (req: Request, res: Response) => {
 
                 if(data.rows.length === 0) {
                     return res.status(400).json({
-                        msg: "working days not found"
+                        msg: "Groups not found"
                     });
                 };
                 
                 res.json({
-                    msg: "successfull working days delete",
+                    msg: "successfull Groups delete",
                     deleted_user: data.rows
                 })
             });
     } catch (e) {
         res.status(500).json({
-            msg: "Error delete Working day",
+            msg: "Error delete Groups",
             error: e
         });
     }

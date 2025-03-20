@@ -4,6 +4,11 @@ import cors from 'cors';
 import routesUsers from '../routes/users.routes';
 import routesRoles from '../routes/roles.routes';
 import routerWorkingDays from '../routes/working_days.routes';
+import routerGroups from '../routes/groups.routes';
+import routerFaculties from '../routes/faculties.routes';
+import routerTypeActivities from '../routes/type_activities.routes';
+import routerItems from '../routes/items.routes';
+import routerSubjects from '../routes/subjects.routes';
 
 class Server {
     private app: Application;
@@ -32,12 +37,12 @@ class Server {
     routes(){
         this.app.use('/api/users', routesUsers),
         this.app.use('/api/roles', routesRoles),
-        this.app.use('/api/working_days', routerWorkingDays)
-       
-        /*  
-        this.app.use('/api/cars', routesCars),
-        this.app.use('/api/bookings', routesBookings),
-        this.app.use('/api/favoritesCars', routesFavoritesCar) */
+        this.app.use('/api/working_days', routerWorkingDays),
+        this.app.use('/api/groups', routerGroups),
+        this.app.use('/api/faculties', routerFaculties),
+        this.app.use('/api/type_activities', routerTypeActivities),
+        this.app.use('/api/items', routerItems),
+        this.app.use('/api/subjects', routerSubjects)
     }
 
     conectDB(){

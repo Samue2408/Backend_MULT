@@ -9,6 +9,11 @@ const cors_1 = __importDefault(require("cors"));
 const users_routes_1 = __importDefault(require("../routes/users.routes"));
 const roles_routes_1 = __importDefault(require("../routes/roles.routes"));
 const working_days_routes_1 = __importDefault(require("../routes/working_days.routes"));
+const groups_routes_1 = __importDefault(require("../routes/groups.routes"));
+const faculties_routes_1 = __importDefault(require("../routes/faculties.routes"));
+const type_activities_routes_1 = __importDefault(require("../routes/type_activities.routes"));
+const items_routes_1 = __importDefault(require("../routes/items.routes"));
+const subjects_routes_1 = __importDefault(require("../routes/subjects.routes"));
 class Server {
     constructor() {
         this.app = (0, express_1.default)();
@@ -30,11 +35,12 @@ class Server {
     routes() {
         this.app.use('/api/users', users_routes_1.default),
             this.app.use('/api/roles', roles_routes_1.default),
-            this.app.use('/api/working_days', working_days_routes_1.default);
-        /*
-        this.app.use('/api/cars', routesCars),
-        this.app.use('/api/bookings', routesBookings),
-        this.app.use('/api/favoritesCars', routesFavoritesCar) */
+            this.app.use('/api/working_days', working_days_routes_1.default),
+            this.app.use('/api/groups', groups_routes_1.default),
+            this.app.use('/api/faculties', faculties_routes_1.default),
+            this.app.use('/api/type_activities', type_activities_routes_1.default),
+            this.app.use('/api/items', items_routes_1.default),
+            this.app.use('/api/subjects', subjects_routes_1.default);
     }
     conectDB() {
         connection_1.default.connect((error) => {

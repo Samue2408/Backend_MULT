@@ -12,71 +12,68 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletedWorkingDay = exports.putWorkingDay = exports.postWorkingDay = exports.getWorkingDay = exports.getWorkingDays = void 0;
+exports.deleteFaculty = exports.putTypeActivity = exports.postTypeActivity = exports.getTypeActivity = exports.getTypeActivities = void 0;
 const connection_1 = __importDefault(require("../db/connection"));
-const getWorkingDays = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    connection_1.default.query(`
-        SELECT 
-            wd.working_day_id AS working_day_id,
-            wd.name AS working_day_name
-        FROM working_days wd;
-    `, [], (error, data) => {
-        if (error)
+const getTypeActivities = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield connection_1.default.query(`
+        SELECT type_activity_id, name
+        FROM type_activities;`, [], (error, data) => {
+        if (error) {
             console.error("Error database details: " + error.message);
-        res.json(data.rows);
-    });
-});
-exports.getWorkingDays = getWorkingDays;
-const getWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const exitWorkDay = yield connection_1.default.query(`
-        SELECT * 
-        FROM working_days
-        WHERE working_day_id = $1;`, [Number(id)]);
-    if (exitWorkDay.rows.length === 0) {
-        return res.status(404).json({
-            msg: "No se ha encontrado id"
-        });
-    }
-    yield connection_1.default.query(` 
-        SELECT
-            wk.working_day_id,
-            wk.name
-        FROM working_days wk
-        WHERE wk.working_day_id = $1;`, [Number(id)], (error, data) => {
-        if (error)
-            console.error("Error database detail: " + error.message);
-        res.json(data.rows);
+            return res.status(500).json({
+                msg: "Error database details: "
+            });
+        }
         if (data.rows.length === 0) {
-            return res.status(404).json({
-                msg: "Working dat no found"
+            return res.json({
+                msg: "invalid data"
             });
         }
         res.json(data.rows);
     });
 });
-exports.getWorkingDay = getWorkingDay;
-const postWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getTypeActivities = getTypeActivities;
+const getTypeActivity = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    yield connection_1.default.query(`
+        SELECT type_activity_id, name
+        FROM type_activities
+        WHERE type_activity_id = $1;
+        `, [Number(id)], (error, data) => {
+        if (error) {
+            console.error("Error database details: " + error.message);
+            return res.status(500).json({
+                msg: "Error database details: "
+            });
+        }
+        if (data.rows.length === 0) {
+            return res.json({
+                msg: "invalid data"
+            });
+        }
+        res.json(data.rows);
+    });
+});
+exports.getTypeActivity = getTypeActivity;
+const postTypeActivity = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("paso poe pa qui");
         const { name } = req.body;
         if (!name) {
             return res.status(400).json({
                 msg: "The name failed is requerid"
             });
         }
-        const existWorkDay = yield connection_1.default.query(`
+        const existTypeA = yield connection_1.default.query(`
             SELECT name 
-            FROM working_days
-            WHERE name = $1`, [name]);
-        if (existWorkDay.rows.length > 0) {
+            FROM type_activities
+            WHERE name = $1;`, [name]);
+        if (existTypeA.rows.length > 0) {
             return res.status(400).json({
-                msg: "Working Day already exist"
+                msg: "Type activity already exist"
             });
         }
-        console.log("paso poe paqui");
         yield connection_1.default.query(`
-            INSERT INTO working_days (name) 
+            INSERT INTO type_activities (name) 
             VALUES ($1)
             RETURNING *;`, [name], (error, data) => {
             if (error) {
@@ -91,19 +88,19 @@ const postWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 });
             }
             res.status(201).json({
-                msg: "Working day succesfully created",
+                msg: "Type activity succesfully created",
                 body: data.rows
             });
         });
     }
     catch (e) {
         res.status(500).json({
-            msg: "Error creating working day"
+            msg: "Error creating Type activity"
         });
     }
 });
-exports.postWorkingDay = postWorkingDay;
-const putWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.postTypeActivity = postTypeActivity;
+const putTypeActivity = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const { name } = req.body;
@@ -112,24 +109,24 @@ const putWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 msg: "The name failed is requerid"
             });
         }
-        const exitWorkDay = yield connection_1.default.query(`
+        const existTypeA = yield connection_1.default.query(`
             SELECT * 
-            FROM working_days
-            WHERE working_day_id = $1;`, [Number(id)]);
-        if (exitWorkDay.rows.length === 0) {
+            FROM type_activities
+            WHERE type_activity_id = $1;`, [Number(id)]);
+        if (existTypeA.rows.length === 0) {
             return res.status(404).json({
                 msg: "No information found with the provided id"
             });
         }
         yield connection_1.default.query(` 
-            UPDATE working_days
+            UPDATE type_activities
             SET name = $1
-            WHERE working_day_id = $2
+            WHERE type_activity_id = $2
             RETURNING *;`, [name, Number(id)], (error, data) => {
             if (error) {
                 console.error("Error database detail: " + error.message);
                 return res.status(500).json({
-                    msg: 'Error en el servidor'
+                    msg: 'Error database detail'
                 });
             }
             if (data.rows.length === 0) {
@@ -139,24 +136,24 @@ const putWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             }
             ;
             res.json({
-                msg: "Working day succesfully updated",
+                msg: "Type activity succesfully updated",
             });
         });
     }
     catch (e) {
         res.status(500).json({
-            msg: "Error updating Working day",
+            msg: "Error updating Type activity",
             error: e
         });
     }
 });
-exports.putWorkingDay = putWorkingDay;
-const deletedWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.putTypeActivity = putTypeActivity;
+const deleteFaculty = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         yield connection_1.default.query(`
-            DELETE FROM working_days 
-            WHERE working_day_id = $1 
+            DELETE FROM type_activities 
+            WHERE type_activity_id = $1 
             RETURNING *;`, [Number(id)], (error, data) => {
             if (error) {
                 console.error("Error data");
@@ -166,21 +163,21 @@ const deletedWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, functi
             }
             if (data.rows.length === 0) {
                 return res.status(400).json({
-                    msg: "working days not found"
+                    msg: "Type activity not found"
                 });
             }
             ;
             res.json({
-                msg: "successfull working days delete",
+                msg: "successfull Type activity delete",
                 deleted_user: data.rows
             });
         });
     }
     catch (e) {
         res.status(500).json({
-            msg: "Error delete Working day",
+            msg: "Error delete Type activity",
             error: e
         });
     }
 });
-exports.deletedWorkingDay = deletedWorkingDay;
+exports.deleteFaculty = deleteFaculty;
