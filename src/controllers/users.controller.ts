@@ -94,6 +94,7 @@ export const postUser = async (req: Request, res: Response): Promise<any> => { /
     const { body } = req;
 
     try {
+
         const userExist = await connection.query('SELECT * FROM users WHERE email = $1', [body.email]);
 
         if(userExist.rows.length > 0) {
@@ -101,13 +102,26 @@ export const postUser = async (req: Request, res: Response): Promise<any> => { /
                 msg: "Email already exists"
             });
         }
-        
+
         // Hashear la contraseña
         if (body.password) {
             body.password = await bcrypt.hash(body.password, saltRounds);
         }        
         
-        const values = Object.values(body);
+        const values = [
+            body.full_name,
+            body.email,
+            body.password,
+            body.level_training,
+            body.role_id,
+            body.working_day_id
+        ]
+
+        if( values.some((value) => value === undefined )){
+            return res.status(400).json({
+                msg: "Incorrect keys"
+            });
+        }
 
         await connection.query(`
             INSERT INTO users (full_name, email, password, level_training, role_id, working_day_id) 
@@ -166,16 +180,26 @@ export const deleteUser = (req: Request, res: Response) => {
     });    
 };
 
-
-export const putUser = async (req: Request, res: Response) => {
+export const putUser = async (req: Request, res: Response): Promise<any> => {
     const { body } = req;
     const { id } = req.params;
     
     try {
         body.user_id = id;
-        const values = Object.values(body);
-
         
+        const values = [
+            body.full_name,
+            body.email,
+            body.level_training,
+            body.role_id,
+            body.working_day_id
+        ]
+
+        if( values.some((value) => value === undefined )){
+            return res.status(400).json({
+                msg: "Incorrect json keys"
+            });
+        }              
 
         await connection.query(`
             UPDATE users

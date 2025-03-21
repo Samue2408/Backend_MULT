@@ -105,7 +105,19 @@ const postUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (body.password) {
             body.password = yield bcrypt_1.default.hash(body.password, saltRounds);
         }
-        const values = Object.values(body);
+        const values = [
+            body.full_name,
+            body.email,
+            body.password,
+            body.level_training,
+            body.role_id,
+            body.working_day_id
+        ];
+        if (values.some((value) => value === undefined)) {
+            return res.status(400).json({
+                msg: "Incorrect keys"
+            });
+        }
         yield connection_1.default.query(`
             INSERT INTO users (full_name, email, password, level_training, role_id, working_day_id) 
             VALUES ($1, $2, $3, $4, $5, $6)
@@ -165,7 +177,18 @@ const putUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         body.user_id = id;
-        const values = Object.values(body);
+        const values = [
+            body.full_name,
+            body.email,
+            body.level_training,
+            body.role_id,
+            body.working_day_id
+        ];
+        if (values.some((value) => value === undefined)) {
+            return res.status(400).json({
+                msg: "Incorrect json keys"
+            });
+        }
         yield connection_1.default.query(`
             UPDATE users
             SET full_name = $1, email = $2, level_training = $3, role_id = $4, working_day_id = $5
