@@ -146,7 +146,7 @@ export const putGroup = async (req: Request, res: Response): Promise<any> => {
                     });
                 };
 
-                res.json({
+                res.status(200).json({
                     msg: "Group succesfully updated",
                 });
             });
@@ -179,7 +179,7 @@ export const deleteGroup = async (req: Request, res: Response) => {
                     });
                 };
                 
-                res.json({
+                res.status(200).json({
                     msg: "successfull Groups delete",
                     deleted_user: data.rows
                 })

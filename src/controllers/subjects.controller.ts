@@ -43,7 +43,7 @@ export const getSubject = async (req: Request, res: Response) => {
             s.credits,
             f.name as faculty_name
         FROM subjects s
-        INNER JOIN faculties f ON f.faculty_id = s.faculty_id;
+        INNER JOIN faculties f ON f.faculty_id = s.faculty_id
         WHERE s.subject_id = $1;
     `, [Number(id)], (error, data) => {
         if (error) {
@@ -53,7 +53,7 @@ export const getSubject = async (req: Request, res: Response) => {
             });
         }
 
-        if(data.rows.length === 0) {
+        if (data.rows.length === 0) {
             return res.status(404).json({
                 msg: "invalid data"
             });

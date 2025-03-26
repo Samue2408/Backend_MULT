@@ -9,6 +9,9 @@ import routerFaculties from '../routes/faculties.routes';
 import routerTypeActivities from '../routes/type_activities.routes';
 import routerItems from '../routes/items.routes';
 import routerSubjects from '../routes/subjects.routes';
+import routerUserSubject from '../routes/users_subjects.routes';
+import routerWorkPlans from '../routes/work_plans.routes';
+import routerWorkPlansItems from '../routes/work_plans_items.routes';
 
 class Server {
     private app: Application;
@@ -42,7 +45,10 @@ class Server {
         this.app.use('/api/faculties', routerFaculties),
         this.app.use('/api/type_activities', routerTypeActivities),
         this.app.use('/api/items', routerItems),
-        this.app.use('/api/subjects', routerSubjects)
+        this.app.use('/api/subjects', routerSubjects),
+        this.app.use('/api/users_subjects', routerUserSubject),
+        this.app.use('/api/work_plans', routerWorkPlans),
+        this.app.use('/api/work_plans_items', routerWorkPlansItems)
     }
 
     conectDB(){

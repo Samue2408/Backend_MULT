@@ -1,4 +1,4 @@
-import e, { Request, Response} from "express";
+import { Request, Response} from "express";
 import connection from "../db/connection";
 
 export const getItems = async (req: Request, res: Response) => {
@@ -73,12 +73,12 @@ export const postItem = async (req: Request, res: Response): Promise<any> => {
             });
         }
 
-        const existItem = await connection.query(`
+        const Itemexist = await connection.query(`
             SELECT name 
             FROM items 
             WHERE name = $1`, [name]);
         
-            if (existItem.rows.length > 0 ) {
+            if (Itemexist.rows.length > 0 ) {
                 return res.status(400).json({
                     msg: "The item already exist"
                 });
@@ -148,7 +148,7 @@ export const putItem = async (req: Request, res: Response): Promise<any> => {
                 });
             }
 
-            res.json({
+            res.status(200).json({
                 msg: "items succesfully updated",
                 body: data.rows
             });
@@ -186,7 +186,7 @@ export const deleteItem = async (req: Request, res: Response): Promise<any> => {
                 });
             }
 
-            res.json({
+            res.status(200).json({
                 msg: "items succesfully deleted",
                 body: data.rows
             });

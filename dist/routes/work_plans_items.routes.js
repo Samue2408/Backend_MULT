@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const work_plans_items_controller_1 = require("../controllers/work_plans_items.controller");
+const router = (0, express_1.Router)();
+router.get('/', work_plans_items_controller_1.getWorkPlansItems);
+router.get('/:item_id/:work_plan_id', work_plans_items_controller_1.getWorkPlanItem);
+router.post('/', work_plans_items_controller_1.postWorkPlanItem);
+router.put('/:item_id/:work_plan_id', work_plans_items_controller_1.putWorkPlanItem);
+router.delete('/:item_id/:work_plan_id', work_plans_items_controller_1.deleteWorkPlanItem);
+exports.default = router;

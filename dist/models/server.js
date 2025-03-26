@@ -14,6 +14,9 @@ const faculties_routes_1 = __importDefault(require("../routes/faculties.routes")
 const type_activities_routes_1 = __importDefault(require("../routes/type_activities.routes"));
 const items_routes_1 = __importDefault(require("../routes/items.routes"));
 const subjects_routes_1 = __importDefault(require("../routes/subjects.routes"));
+const users_subjects_routes_1 = __importDefault(require("../routes/users_subjects.routes"));
+const work_plans_routes_1 = __importDefault(require("../routes/work_plans.routes"));
+const work_plans_items_routes_1 = __importDefault(require("../routes/work_plans_items.routes"));
 class Server {
     constructor() {
         this.app = (0, express_1.default)();
@@ -40,7 +43,10 @@ class Server {
             this.app.use('/api/faculties', faculties_routes_1.default),
             this.app.use('/api/type_activities', type_activities_routes_1.default),
             this.app.use('/api/items', items_routes_1.default),
-            this.app.use('/api/subjects', subjects_routes_1.default);
+            this.app.use('/api/subjects', subjects_routes_1.default),
+            this.app.use('/api/users_subjects', users_subjects_routes_1.default),
+            this.app.use('/api/work_plans', work_plans_routes_1.default),
+            this.app.use('/api/work_plans_items', work_plans_items_routes_1.default);
     }
     conectDB() {
         connection_1.default.connect((error) => {

@@ -54,7 +54,6 @@ export const getWorkingDay = async (req:Request, res:Response): Promise<any> => 
 export const postWorkingDay = async (req: Request, res: Response): Promise<any> => {
     
     try {
-        console.log("paso poe pa qui");
         const {name} = req.body;
 
         if (!name) {
@@ -63,18 +62,18 @@ export const postWorkingDay = async (req: Request, res: Response): Promise<any> 
             });
         }
 
-        const existWorkDay = await connection.query(`
+        const workDayExist = await connection.query(`
             SELECT name 
             FROM working_days
             WHERE name = $1`, [name]
         );
 
-        if (existWorkDay.rows.length > 0) {
+        if (workDayExist.rows.length > 0) {
             return res.status(400).json({
                 msg: "Working Day already exist"
             });
         }
-        console.log("paso poe paqui");
+
         await connection.query(`
             INSERT INTO working_days (name) 
             VALUES ($1)

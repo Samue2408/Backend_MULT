@@ -74,11 +74,11 @@ const postItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 msg: "The data failed is requerid"
             });
         }
-        const existItem = yield connection_1.default.query(`
+        const Itemexist = yield connection_1.default.query(`
             SELECT name 
             FROM items 
             WHERE name = $1`, [name]);
-        if (existItem.rows.length > 0) {
+        if (Itemexist.rows.length > 0) {
             return res.status(400).json({
                 msg: "The item already exist"
             });
@@ -140,7 +140,7 @@ const putItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     msg: "Invalid data"
                 });
             }
-            res.json({
+            res.status(200).json({
                 msg: "items succesfully updated",
                 body: data.rows
             });
@@ -174,7 +174,7 @@ const deleteItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     msg: "Invalid data"
                 });
             }
-            res.json({
+            res.status(200).json({
                 msg: "items succesfully deleted",
                 body: data.rows
             });

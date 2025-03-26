@@ -58,23 +58,21 @@ const getWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.getWorkingDay = getWorkingDay;
 const postWorkingDay = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("paso poe pa qui");
         const { name } = req.body;
         if (!name) {
             return res.status(400).json({
                 msg: "The name failed is requerid"
             });
         }
-        const existWorkDay = yield connection_1.default.query(`
+        const workDayExist = yield connection_1.default.query(`
             SELECT name 
             FROM working_days
             WHERE name = $1`, [name]);
-        if (existWorkDay.rows.length > 0) {
+        if (workDayExist.rows.length > 0) {
             return res.status(400).json({
                 msg: "Working Day already exist"
             });
         }
-        console.log("paso poe paqui");
         yield connection_1.default.query(`
             INSERT INTO working_days (name) 
             VALUES ($1)

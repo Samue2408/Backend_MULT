@@ -146,7 +146,7 @@ export const putFaculty = async (req: Request, res: Response): Promise<any> => {
                     });
                 };
 
-                res.json({
+                res.status(200).json({
                     msg: "Faculty succesfully updated",
                 });
             });
@@ -179,7 +179,7 @@ export const deleteFaculty = async (req: Request, res: Response) => {
                     });
                 };
                 
-                res.json({
+                res.status(200).json({
                     msg: "successfull Faculty delete",
                     deleted_user: data.rows
                 })

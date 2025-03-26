@@ -135,7 +135,7 @@ const putGroup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 });
             }
             ;
-            res.json({
+            res.status(200).json({
                 msg: "Group succesfully updated",
             });
         });
@@ -167,7 +167,7 @@ const deleteGroup = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 });
             }
             ;
-            res.json({
+            res.status(200).json({
                 msg: "successfull Groups delete",
                 deleted_user: data.rows
             });

@@ -135,7 +135,7 @@ const putFaculty = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 });
             }
             ;
-            res.json({
+            res.status(200).json({
                 msg: "Faculty succesfully updated",
             });
         });
@@ -167,7 +167,7 @@ const deleteFaculty = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 });
             }
             ;
-            res.json({
+            res.status(200).json({
                 msg: "successfull Faculty delete",
                 deleted_user: data.rows
             });
