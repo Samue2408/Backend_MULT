@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, response } from "express";
+import { Request, Response, NextFunction } from "express";
 import connection from "../db/connection";
 import bcrypt from 'bcrypt';
 
@@ -261,7 +261,6 @@ export const verifyUserCredentials = (req: Request, res: Response, next: NextFun
 
 export const changePassword = async (req: Request, res: Response): Promise<any> => {
 
-
     const { password, new_password, user_id } = req.body
     
     try {
@@ -303,10 +302,13 @@ export const changePassword = async (req: Request, res: Response): Promise<any> 
                     msg: "Invalid data"
                 });
             };
+
+            const user = data.rows[0]
+            user.password = undefined // Eliminar la contraseña del objeto de respuesta
             
             res.json({
                 msg: "User successfully updated",
-                updated_user: data.rows
+                updated_user: user
             });
         });
 

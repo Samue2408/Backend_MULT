@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { changePassword, deleteUser, getUser, getUserByRole, getUsers, postUser, putUser, verifyUserCredentials} from "../controllers/users.controller";
-import { deleteRefreshToken, findRefreshToken, generateTokens, refreshAccessToken } from "../controllers/user_tokens.controller";
+import { deleteRefreshToken, findRefreshToken, generateTokens, refreshAccessToken } from "../controllers/users_tokens.controller";
 
 const router = Router();
 

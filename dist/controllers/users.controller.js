@@ -278,9 +278,11 @@ const changePassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 });
             }
             ;
+            const user = data.rows[0];
+            user.password = undefined; // Eliminar la contraseña del objeto de respuesta
             res.json({
                 msg: "User successfully updated",
-                updated_user: data.rows
+                updated_user: user
             });
         });
     }
