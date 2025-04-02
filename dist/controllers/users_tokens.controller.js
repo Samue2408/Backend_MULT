@@ -53,19 +53,29 @@ exports.generateTokens = generateTokens;
 const deleteRefreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    console.log(token);
     if (!token) {
         return res.status(401).json({
             msg: "Token no povided"
         });
     }
-    const isDeleteToken = yield deleteRefreshTokenBD(token);
-    if (!isDeleteToken)
-        res.status(500).json({
-            msg: "Token not delete"
+    try {
+        const isDeleteToken = yield deleteRefreshTokenBD(token);
+        console.log("isDeleteToken: " + isDeleteToken);
+        if (!isDeleteToken) {
+            return res.status(500).json({
+                msg: "Token not found"
+            });
+        }
+        return res.json({
+            msg: "Successfully logged out"
         });
-    res.json({
-        msg: "Succesfully logout"
-    });
+    }
+    catch (error) {
+        return res.status(500).json({
+            msg: "Error deleting token"
+        });
+    }
 });
 exports.deleteRefreshToken = deleteRefreshToken;
 const generateAccessToken = (user_id) => __awaiter(void 0, void 0, void 0, function* () {
@@ -75,12 +85,17 @@ const generateRefreshToken = (user_id) => __awaiter(void 0, void 0, void 0, func
     return yield jsonwebtoken_1.default.sign({ userId: user_id }, JWT_SECRET, { expiresIn: '7d' });
 });
 const deleteRefreshTokenBD = (token) => __awaiter(void 0, void 0, void 0, function* () {
-    yield connection_1.default.query('DELETE FROM refresh_tokens WHERE token = $1', [token], (error, data) => {
-        if (error) {
-            console.error("Error database details: " + error.message);
-            return false;
-        }
-        return true;
+    return new Promise((resolve, reject) => {
+        connection_1.default.query('DELETE FROM refresh_tokens WHERE token = $1 RETURNING *', [token], (error, data) => {
+            if (error) {
+                console.error("Error database details: " + error.message);
+                return reject(false); // Rechaza la promesa con false
+            }
+            if (data.rowCount === 0) {
+                return resolve(false); // No se eliminó nada
+            }
+            return resolve(true); // Eliminación exitosa
+        });
     });
 });
 const refreshAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

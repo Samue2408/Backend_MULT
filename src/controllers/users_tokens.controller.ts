@@ -44,6 +44,7 @@ export const generateTokens = async (req: Request, res: Response) => {
 
 export const deleteRefreshToken = async (req: Request, res: Response): Promise<any> => {
     const token = req.headers.authorization?.split(' ')[1];
+    console.log(token)
 
     if(!token) {
         return res.status(401).json({
@@ -51,15 +52,25 @@ export const deleteRefreshToken = async (req: Request, res: Response): Promise<a
         })
     }
     
-    const isDeleteToken = await deleteRefreshTokenBD(token);
+    try {
+        const isDeleteToken = await deleteRefreshTokenBD(token); 
 
-    if(!isDeleteToken) res.status(500).json({
-        msg: "Token not delete"
-    })
+        console.log("isDeleteToken: " + isDeleteToken);
 
-    res.json({
-        msg: "Succesfully logout"
-    })
+        if (!isDeleteToken) {
+            return res.status(500).json({
+                msg: "Token not found"
+            });
+        }
+
+        return res.json({
+            msg: "Successfully logged out"
+        });
+    } catch (error) {
+        return res.status(500).json({
+            msg: "Error deleting token"
+        });
+    }
 
 }
 
@@ -71,14 +82,24 @@ const generateRefreshToken = async (user_id: number) => {
     return await jwt.sign({ userId: user_id }, JWT_SECRET, { expiresIn: '7d' } as SignOptions);
 }
 
-const deleteRefreshTokenBD = async (token: string): Promise<any> => {
-    await connection.query('DELETE FROM refresh_tokens WHERE token = $1', [token], (error, data) => {
-        if (error) {
-            console.error("Error database details: " + error.message);
-            return false
-        } 
-        
-        return true;
+const deleteRefreshTokenBD = async (token: string): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        connection.query(
+            'DELETE FROM refresh_tokens WHERE token = $1 RETURNING *', 
+            [token], 
+            (error, data) => {
+                if (error) {
+                    console.error("Error database details: " + error.message);
+                    return reject(false); // Rechaza la promesa con false
+                } 
+
+                if (data.rowCount === 0) {
+                    return resolve(false); // No se eliminó nada
+                }
+
+                return resolve(true); // Eliminación exitosa
+            }
+        );
     });
 }
 
